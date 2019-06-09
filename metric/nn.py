@@ -42,4 +42,4 @@ def leave_one_out(n, max_k, a, xs, ys):
         res = f(indexes) != ys
         sums[k - 1] = np.sum(res.astype(np.int))
 
-    return np.argmin(sums), sums
+    return np.argmin(sums) + 1, sums
