@@ -1,7 +1,9 @@
 import numpy as np
 
 
-def generic(n, k, xs, ys, u, metric, w):
+def knn_generic(n, k, xs, ys, u, metric, w):
+    assert k <= np.size(xs, axis=0)
+
     dist = np.fromiter(map(lambda x: metric(x, u), xs), dtype=np.float)
 
     # [index, (dist, ys)]
@@ -22,4 +24,22 @@ def generic(n, k, xs, ys, u, metric, w):
 def knn(n, k, xs, ys, u, metric):
     w = lambda i, u: int(i < k)
 
-    return generic(n, k, xs, ys, u, metric, w)
+    return knn_generic(n, k, xs, ys, u, metric, w)
+
+
+def leave_one_out(n, max_k, a, xs, ys):
+    assert max_k <= np.size(xs, axis=0)
+
+    size = np.size(xs, axis=0)
+    indexes = np.arange(0, size, 1, dtype=np.int)
+    sums = np.zeros(max_k - 1, dtype=np.int)
+
+    for k in range(1, max_k):
+        f = np.vectorize(lambda i: a(n, k,
+                                     xs[indexes != i, :],
+                                     ys[indexes != i],
+                                     xs[i, :])[0])
+        res = f(indexes) != ys
+        sums[k - 1] = np.sum(res.astype(np.int))
+
+    return np.argmin(sums), sums
