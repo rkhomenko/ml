@@ -27,6 +27,27 @@ def knn(n, k, xs, ys, u, metric):
     return knn_generic(n, k, xs, ys, u, metric, w)
 
 
+def knn_parzen(n, k, xs, ys, u, metric):
+    assert k + 1 <= np.size(xs, axis=0)
+
+    dist = np.fromiter(map(lambda x: metric(x, u), xs), dtype=np.float)
+
+    # [index, (dist, ys)]
+    dist = np.array(list(enumerate(zip(dist, ys))))
+
+    dist_val = dist[dist[:, 1].argsort()]
+
+    results = np.zeros(n, dtype=np.float)
+    for y in range(0, n):
+        res = 0
+        for i in range(0, k):
+            res += int(dist_val[i][1][1] == y) * \
+                    np.exp(-dist_val[i][1][0] / dist_val[k][1][0])
+        results[y] = res
+
+    return np.argmax(results), results
+
+
 def leave_one_out(n, max_k, a, xs, ys):
     assert max_k <= np.size(xs, axis=0)
 
